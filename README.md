@@ -15,15 +15,14 @@ Vlm_server.py -HOW TO USE
 5. Run "http://localhost:8000/docs" in your URL to access the FastAPI
 6. Here you can upload JPG files and get responses back
 
-  EXAMPLE INPUT/OUTPUT
-  A. When inputing 
-  ![Trash can](https://github.com/user-attachments/assets/8daae350-04cf-4022-9010-51b38dfbee3a) 
+EXAMPLE INPUT/OUTPUT
+    A. When inputing 
+    ![Trash can](https://github.com/user-attachments/assets/8daae350-04cf-4022-9010-51b38dfbee3a) 
   
-  The respoonse body should be 
+    The respoonse body should be 
   
-  "{
-  "caption": "A garbage can full of trash.",
-  "decision": "safe"
-}"
+    "{
+    "caption": "A garbage can full of trash.",
+    "decision": "safe"}"
 
   

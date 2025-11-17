@@ -20,7 +20,7 @@ EXAMPLE INPUT/OUTPUT
     
  ![Trash can](https://github.com/user-attachments/assets/8daae350-04cf-4022-9010-51b38dfbee3a) 
   
-    The respoonse body should be 
+The respoonse body should be 
   
     "{
     "caption": "A garbage can full of trash.",

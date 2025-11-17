@@ -5,7 +5,7 @@
 # PIDcontroller folder
 - To use, drag and drop to .\WebotsProjectFolder\controllers
 
-# Vlm_server.py -HOW TO USE
+# Vlm_server.py - HOW TO USE
 1. Create new folder and run "pip install torch transformers pillow fastapi uvicorn accelerate" in it
 2. put vlm_server.py file in the same folder you just created
 3. run "pip install python-multipart" in same folder
@@ -16,7 +16,7 @@
 6. Here you can upload JPG files and get responses back
 
 # EXAMPLE INPUT/OUTPUT
-    When inputing
+When inputing
     
  ![Trash can](https://github.com/user-attachments/assets/8daae350-04cf-4022-9010-51b38dfbee3a) 
   

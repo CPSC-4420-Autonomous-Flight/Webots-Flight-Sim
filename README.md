@@ -18,7 +18,7 @@ Vlm_server.py -HOW TO USE
 EXAMPLE INPUT/OUTPUT
     When inputing
     
-    ![Trash can](https://github.com/user-attachments/assets/8daae350-04cf-4022-9010-51b38dfbee3a) 
+ ![Trash can](https://github.com/user-attachments/assets/8daae350-04cf-4022-9010-51b38dfbee3a) 
   
     The respoonse body should be 
   

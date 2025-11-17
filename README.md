@@ -16,7 +16,8 @@ Vlm_server.py -HOW TO USE
 6. Here you can upload JPG files and get responses back
 
 EXAMPLE INPUT/OUTPUT
-    When inputing \n
+    When inputing
+    
     ![Trash can](https://github.com/user-attachments/assets/8daae350-04cf-4022-9010-51b38dfbee3a) 
   
     The respoonse body should be 

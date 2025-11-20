@@ -52,10 +52,8 @@ int main(int argc, char **argv) {
   WbDeviceTag front_right_led = wb_robot_get_device("front right led");
   WbDeviceTag imu = wb_robot_get_device("inertial unit");
   wb_inertial_unit_enable(imu, timestep);
-  
   WbDeviceTag gps = wb_robot_get_device("gps");
   wb_gps_enable(gps, timestep);
-  
   WbDeviceTag compass = wb_robot_get_device("compass");
   wb_compass_enable(compass, timestep);
   WbDeviceTag gyro = wb_robot_get_device("gyro");
@@ -85,7 +83,7 @@ int main(int argc, char **argv) {
     if (wb_robot_get_time() > 1.0)
       break;
   }
-  
+
   // Display manual control message.
   printf("You can control the drone with your computer keyboard:\n");
   printf("- 'up': move forward.\n");
@@ -99,74 +97,24 @@ int main(int argc, char **argv) {
 
   // Constants, empirically found.
   const double k_vertical_thrust = 68.5;  // with this thrust, the drone lifts.
-  const double k_vertical_offset = 0.2;   // Vertical offset where the robot actually targets to stabilize itself. Original 0.2
-  
-  //const double k_vertical_p = 3.0;        // P constant of the vertical PID.
+  const double k_vertical_offset = 0.6;   // Vertical offset where the robot actually targets to stabilize itself.
+  const double k_vertical_p = 3.0;        // P constant of the vertical PID.
   const double k_roll_p = 50.0;           // P constant of the roll PID.
   const double k_pitch_p = 30.0;          // P constant of the pitch PID.
 
   // Variables.
-  double target_altitude = 1.0;  // The target altitude. Can be changed as necessary.
-  double target_x =0.0;
-  double target_z =0.0;
-  
-  double target_yawn = -1;
-  
-  double kp_x =10;
-  double kd_x =10;
-  
-  double kp_z =10;
-  double kd_z =10;
-  
-  double kp_altitude =3;
-  double kd_altitude =4;
-  
-  double kp_yawn =1;
-  double kd_yawn =1;
-  
-  double error_x =0;
-  double last_error_x =0;
-  double d_error_x =0;
-  
-  double error_z =0;
-  double last_error_z =0;
-  double d_error_z =0;
-  
-  double error_altitude =0;
-  double last_error_altitude =0;
-  double d_error_altitude =0;
-  
-  double error_yawn =0;
-  double last_error_yawn =0;
-  double d_error_yawn =0;
-  
-  double pitch_input =0;
-  double roll_input =0;
-  double vertical_input =0;
-  //double yaw_input =0;
-  
-  double position_x =0;
-  double altitude =0;
-  double position_z =0;
-  
-  
+  double target_altitude = 1.0;  // The target altitude. Can be changed by the user.
+
   // Main loop
   while (wb_robot_step(timestep) != -1) {
     const double time = wb_robot_get_time();  // in seconds.
 
     // Retrieve robot position using the sensors.
-    //const double roll = wb_inertial_unit_get_roll_pitch_yaw(imu)[0] + M_PI / 2.0;
-    const double roll = wb_inertial_unit_get_roll_pitch_yaw(imu)[0]; //original one
+    const double roll = wb_inertial_unit_get_roll_pitch_yaw(imu)[0];
     const double pitch = wb_inertial_unit_get_roll_pitch_yaw(imu)[1];
-    //const double yawn = *wb_compass_get_values(compass);
-    const double yawn = atan2(roll,pitch);
-    
-    position_x = wb_gps_get_values(gps)[0];
-    altitude = wb_gps_get_values(gps)[1];
-    position_z = wb_gps_get_values(gps)[2];
-    
-    const double roll_acceleration = wb_gyro_get_values(gyro)[0];
-    const double pitch_acceleration = wb_gyro_get_values(gyro)[1];
+    const double altitude = wb_gps_get_values(gps)[2];
+    const double roll_velocity = wb_gyro_get_values(gyro)[0];
+    const double pitch_velocity = wb_gyro_get_values(gyro)[1];
 
     // Blink the front LEDs alternatively with a 1 second rate.
     const bool led_state = ((int)time) % 2;
@@ -174,90 +122,52 @@ int main(int argc, char **argv) {
     wb_led_set(front_right_led, !led_state);
 
     // Stabilize the Camera by actuating the camera motors according to the gyro feedback.
-    wb_motor_set_position(camera_roll_motor, -0.115 * roll_acceleration);
-    wb_motor_set_position(camera_pitch_motor, -0.1 * pitch_acceleration);
+    wb_motor_set_position(camera_roll_motor, -0.115 * roll_velocity);
+    wb_motor_set_position(camera_pitch_motor, -0.1 * pitch_velocity);
 
     // Transform the keyboard input to disturbances on the stabilization algorithm.
     double roll_disturbance = 0.0;
     double pitch_disturbance = 0.0;
     double yaw_disturbance = 0.0;
-    
-    // double front_left_motor_input = 0;
-    // double front_right_motor_input = 0;
-    // double rear_left_motor_input = 0;
-    // double rear_right_motor_input = 0;
-
-    
     int key = wb_keyboard_get_key();
     while (key > 0) {
       switch (key) {
         case WB_KEYBOARD_UP:
-          pitch_disturbance -= -0.5; //was =-2.0
+          pitch_disturbance = -2.0;
           break;
         case WB_KEYBOARD_DOWN:
-          pitch_disturbance += 0.5; //was =2.0
+          pitch_disturbance = 2.0;
           break;
         case WB_KEYBOARD_RIGHT:
-          roll_disturbance -= 0.5; //was =-1.3
+          yaw_disturbance = -1.3;
           break;
         case WB_KEYBOARD_LEFT:
-          roll_disturbance += 0.5; //was +=1.3
+          yaw_disturbance = 1.3;
           break;
         case (WB_KEYBOARD_SHIFT + WB_KEYBOARD_RIGHT):
-          target_x -= 0.01; //was =-1.0
+          roll_disturbance = -1.0;
           break;
         case (WB_KEYBOARD_SHIFT + WB_KEYBOARD_LEFT):
-          target_x += 0.01; //was = 1.0
+          roll_disturbance = 1.0;
           break;
         case (WB_KEYBOARD_SHIFT + WB_KEYBOARD_UP):
-          target_z -= 0.01;
-          printf("target altitude: %f [m]\n", target_z);
-          //target_altitude += 0.05; //
-          //printf("target altitude: %f [m]\n", target_altitude);
+          target_altitude += 0.05;
+          printf("target altitude: %f [m]\n", target_altitude);
           break;
         case (WB_KEYBOARD_SHIFT + WB_KEYBOARD_DOWN):
-          target_z += 0.01;
-          printf("target altitude: %f [m]\n", target_z);
-          //target_altitude -= 0.05;
-          //printf("target altitude: %f [m]\n", target_altitude);
+          target_altitude -= 0.05;
+          printf("target altitude: %f [m]\n", target_altitude);
           break;
       }
       key = wb_keyboard_get_key();
     }
 
-    //PD Control for x position
-    error_x = CLAMP(target_x + position_x, -1.0, 1.0);
-    d_error_x = error_x - last_error_x;
-    last_error_x =error_x;
-    pitch_input = (k_pitch_p * CLAMP(pitch, -1.0, 1.0)) -5*pitch_acceleration + pitch_disturbance;
-    pitch_input = pitch_input + (kp_x*error_x) + (kd_x*d_error_x);
-    
-    //PD control for z position
-    error_z = CLAMP(target_z - position_z, -1.0, 1.0);
-    d_error_z = error_z - last_error_z;
-    last_error_z = error_z;
-    roll_input = k_roll_p* CLAMP(roll,-1.0, 1.0) + 5*roll_acceleration + roll_disturbance;
-    roll_input = roll_input + (kp_z *error_z) +(kd_z*d_error_z);
-    
-    //PD Control for altitude position
-    error_altitude = CLAMP(target_altitude - altitude + k_vertical_offset, -1.0, 1.0);
-    d_error_altitude = error_altitude - last_error_altitude;
-    last_error_altitude = error_altitude;
-    vertical_input = (kp_altitude*error_altitude) + (kd_altitude * d_error_altitude);
-    
-    //PD control for rotation
-    error_yawn = target_yawn - yawn;
-    d_error_yawn = error_yawn - last_error_yawn;
-    const double yaw_input = kp_yawn*CLAMP(error_yawn, -1.0, 1.0) + (kd_yawn * d_error_yawn + yaw_disturbance);
-    last_error_yawn = error_yawn;
-    
-    
-    // Default Compute the roll, pitch, yaw and vertical inputs.
-    //const double roll_input = k_roll_p * CLAMP(roll, -1.0, 1.0) + roll_velocity + roll_disturbance;
-    //const double pitch_input = k_pitch_p * CLAMP(pitch, -1.0, 1.0) + pitch_velocity + pitch_disturbance;
-    //const double yaw_input = yaw_disturbance;
-    //const double clamped_difference_altitude = CLAMP(target_altitude - altitude + k_vertical_offset, -1.0, 1.0);
-    //const double vertical_input = k_vertical_p * pow(clamped_difference_altitude, 3.0);
+    // Compute the roll, pitch, yaw and vertical inputs.
+    const double roll_input = k_roll_p * CLAMP(roll, -1.0, 1.0) + roll_velocity + roll_disturbance;
+    const double pitch_input = k_pitch_p * CLAMP(pitch, -1.0, 1.0) + pitch_velocity + pitch_disturbance;
+    const double yaw_input = yaw_disturbance;
+    const double clamped_difference_altitude = CLAMP(target_altitude - altitude + k_vertical_offset, -1.0, 1.0);
+    const double vertical_input = k_vertical_p * pow(clamped_difference_altitude, 3.0);
 
     // Actuate the motors taking into consideration all the computed inputs.
     const double front_left_motor_input = k_vertical_thrust + vertical_input - roll_input + pitch_input - yaw_input;
@@ -268,7 +178,7 @@ int main(int argc, char **argv) {
     wb_motor_set_velocity(front_right_motor, -front_right_motor_input);
     wb_motor_set_velocity(rear_left_motor, -rear_left_motor_input);
     wb_motor_set_velocity(rear_right_motor, rear_right_motor_input);
-  }
+  };
 
   wb_robot_cleanup();
 

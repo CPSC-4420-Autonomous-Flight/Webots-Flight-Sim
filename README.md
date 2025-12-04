@@ -139,7 +139,3 @@ All controllers in this project are designed for the Mavic2Pro quadcopter and wr
 ## Contributing
 
 Contributions are welcome! Please feel free to submit issues or pull requests.
-
-## License
-
-[Add your license information here]
